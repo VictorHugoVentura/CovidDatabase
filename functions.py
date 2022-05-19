@@ -1,9 +1,5 @@
 import csv
-import enum
-import json
-import time
 import psycopg2
-import urllib.request
 
 from config import config
 
@@ -25,10 +21,6 @@ CREATE TABLE covid_stats (
 );
 '''
 
-start_time = time.time()
-ecdc_url = "https://opendata.ecdc.europa.eu/covid19/nationalcasedeath/json"
-table_name = "covid_stats"
-
 def create_database():
     params = config()
 
@@ -48,28 +40,24 @@ def create_database():
     cursor.close()
     connection.close()
 
-def create_table(table_name, data):
-    '''
-    CREATE TABLE IF NOT EXISTS covid_stats (
-        country VARCHAR(255),
-        country_code VARCHAR(255),
-        continent VARCHAR(255),
-        population BIGINT,
-        indicator VARCHAR(255),
-        weekly_count BIGINT,
-        year_week VARCHAR(255),
-        rate_14_day VARCHAR(255),
-        cumulative_count BIGINT,
-        source VARCHAR(255),
-        note VARCHAR(255)
-    );
-    '''
-    
-    test_query = data[11685] # 11685 is an index with all columns
-    columns = list(test_query.keys())
+def create_table(table_name, data, csv_data=False):
+    if csv_data:
+        with open(data) as csv_file:
+            reader = csv.reader(csv_file)
+
+            for i, line in enumerate(reader):
+                if i == 0:
+                    columns = line
+                    columns = [f'"{x}"' for x in columns]
+                if i == 1:
+                    sql_entries = py_to_sql(line)
+                    break
+    else:
+        test_query = data[11685] # 11685 is an index with all columns
+        columns = list(test_query.keys())
+        sql_entries = py_to_sql(list(test_query.values()))
 
     table_sql = f'CREATE TABLE IF NOT EXISTS {table_name} (\n    '
-    sql_entries = py_to_sql(list(test_query.values()))
 
     for i, column in enumerate(columns):
         columns[i] = column + ' ' + sql_entries[i]
@@ -84,21 +72,6 @@ def create_table(table_name, data):
 
     cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
     cursor.execute(table_sql)
-
-    cursor.close()
-    connection.close()
-
-def drop_table(table_name):
-    params = config()
-
-    sql = f"DROP TABLE IF EXISTS {table_name};"
-
-    connection = psycopg2.connect(**params)
-    connection.autocommit = True
-
-    cursor = connection.cursor()
-
-    cursor.execute(sql)
 
     cursor.close()
     connection.close()
@@ -151,6 +124,19 @@ def fill_table(table_name, data):
         for query in data:
             sql = get_insert_str(query, table_name)
             cursor.execute(sql)
+
+    cursor.close()
+    connection.close()
+
+def load_csv(sql):
+    params = config()
+
+    connection = psycopg2.connect(**params)
+    connection.autocommit = True
+
+    cursor = connection.cursor()
+
+    cursor.execute(sql)
 
     cursor.close()
     connection.close()
