@@ -140,3 +140,92 @@ def load_csv(sql):
 
     cursor.close()
     connection.close()
+
+# Necessary because the name of all countries comes 
+# with a trailing whitespace in the original csv,
+# also many countries have different strings for
+# their names between the json and the csv files
+def new_csv(file_name, new_file):
+    with open(file_name) as csv_file:
+        reader = csv.reader(csv_file)
+        
+        with open(new_file, "w", newline='\n') as new_csv:
+            
+            writer = csv.writer(new_csv)
+            for line in reader:
+                line[0] = line[0].rstrip()
+                if line[0] == "United States":
+                    line[0] = "United States Of America"
+                elif line[0] == "Bahamas, The":
+                    line[0] = "Bahamas"
+                elif line[0] == "Central African Rep.":
+                    line[0] = "Central African Republic"
+                elif line[0] == "Congo, Dem. Rep.":
+                    line[0] = "Democratic Republic Of The Congo"
+                elif line[0] == "Congo, Repub. of the":
+                    line[0] = "Congo"
+                elif line[0] == "Cote d'Ivoire":
+                    line[0] = "Cote Divoire"
+                elif line[0] == "Czech Republic":
+                    line[0] = "Czechia"
+                elif line[0] == "East Timor":
+                    line[0] = "Timor Leste"
+                elif line[0] == "Gambia, The":
+                    line[0] = "Gambia"
+                elif line[0] == "Guinea-Bissau":
+                    line[0] = "Guinea Bissau"
+                elif line[0] == "Korea, North":
+                    line[0] = "North Korea"
+                elif line[0] == "Korea, South":
+                    line[0] = "South Korea"
+                elif line[0] == "Micronesia, Fed. St.":
+                    line[0] = "Micronesia (Federated States Of)"
+                elif line[0] == "N. Mariana Islands":
+                    line[0] = "Northern Mariana Islands"
+                elif line[0] == "Saint Kitts & Nevis":
+                    line[0] = "Saint Kitts And Nevis"
+                elif line[0] == "Saint Vincent and the Grenadines":
+                    line[0] = "Saint Vincent And The Grenadines"
+                elif line[0] == "Sao Tome & Principe":
+                    line[0] = "Sao Tome And Principe"
+                elif line[0] == "Trinidad & Tobago":
+                    line[0] = "Trinidad And Tobago"
+                elif line[0] == "Turks & Caicos Is":
+                    line[0] = "Turks And Caicos Islands"
+                elif line[0] == "Wallis and Futuna":
+                    line[0] == "Wallis And Futuna"
+                elif line[0] == "Tanzania":
+                    line[0] == "United Republic Of Tanzania"
+                writer.writerow(line)
+
+def check_most_recent(table_name, week_str):
+    dummy_query = f'''
+        SELECT country
+        FROM {table_name}
+        WHERE year_week='{week_str}'
+    '''
+    params = config()
+
+    connection = psycopg2.connect(**params)
+    connection.autocommit = True
+
+    cursor = connection.cursor()
+    cursor.execute(dummy_query)
+
+    while cursor.fetchone() is None:
+        year_part, week_part = week_str.split('-')
+        week_part = int(week_part)
+        week_part -= 1
+        week_str = year_part + '-' + str(week_part)
+
+        dummy_query = f'''
+            SELECT country
+            FROM {table_name}
+            WHERE year_week='{week_str}'
+        '''
+
+        cursor.execute(dummy_query)
+    
+    cursor.close()
+    connection.close()
+    return week_str
