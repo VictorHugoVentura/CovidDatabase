@@ -3,6 +3,36 @@ import psycopg2
 
 from config import config
 
+country_names_dict = {
+    "United States": "United States Of America",
+    "Bahamas, The": "Bahamas",
+    "Central African Rep.": "Central African Republic",
+    "Congo, Dem. Rep.": "Democratic Republic Of The Congo",
+    "Congo, Repub. of the": "Congo",
+    "Cote d'Ivoire": "Cote Divoire",
+    "Czech Republic": "Czechia",
+    "East Timor": "Timor Leste",
+    "Gambia, The": "Gambia",
+    "Guinea-Bissau": "Guinea Bissau",
+    "Korea, North": "North Korea",
+    "Korea, South": "South Korea",
+    "Micronesia, Fed. St.": "Micronesia (Federated States Of)",
+    "N. Mariana Islands": "Northern Mariana Islands",
+    "Saint Kitts & Nevis": "Saint Kitts And Nevis",
+    "Saint Vincent and the Grenadines": "Saint Vincent And The Grenadines",
+    "Sao Tome & Principe": "Sao Tome And Principe",
+    "Trinidad & Tobago": "Trinidad And Tobago",
+    "Turks & Caicos Is": "Turks And Caicos Islands",
+    "Wallis and Futuna": "Wallis And Futuna",
+    "Tanzania": "United Republic Of Tanzania"
+}
+
+regions_dict = {
+    "ASIA (EX. NEAR EAST)": "ASIA (EXCEPT NEAR EAST)",
+    "LATIN AMER. & CARIB": "LATIN AMERICA AND CARIBBEAN",
+    "C.W. OF IND. STATES": "COMMONWEALTH OF INDEPENDENT STATES"
+}
+
 
 # create table command:
 '''
@@ -154,48 +184,12 @@ def new_csv(file_name, new_file):
             writer = csv.writer(new_csv)
             for line in reader:
                 line[0] = line[0].rstrip()
-                if line[0] == "United States":
-                    line[0] = "United States Of America"
-                elif line[0] == "Bahamas, The":
-                    line[0] = "Bahamas"
-                elif line[0] == "Central African Rep.":
-                    line[0] = "Central African Republic"
-                elif line[0] == "Congo, Dem. Rep.":
-                    line[0] = "Democratic Republic Of The Congo"
-                elif line[0] == "Congo, Repub. of the":
-                    line[0] = "Congo"
-                elif line[0] == "Cote d'Ivoire":
-                    line[0] = "Cote Divoire"
-                elif line[0] == "Czech Republic":
-                    line[0] = "Czechia"
-                elif line[0] == "East Timor":
-                    line[0] = "Timor Leste"
-                elif line[0] == "Gambia, The":
-                    line[0] = "Gambia"
-                elif line[0] == "Guinea-Bissau":
-                    line[0] = "Guinea Bissau"
-                elif line[0] == "Korea, North":
-                    line[0] = "North Korea"
-                elif line[0] == "Korea, South":
-                    line[0] = "South Korea"
-                elif line[0] == "Micronesia, Fed. St.":
-                    line[0] = "Micronesia (Federated States Of)"
-                elif line[0] == "N. Mariana Islands":
-                    line[0] = "Northern Mariana Islands"
-                elif line[0] == "Saint Kitts & Nevis":
-                    line[0] = "Saint Kitts And Nevis"
-                elif line[0] == "Saint Vincent and the Grenadines":
-                    line[0] = "Saint Vincent And The Grenadines"
-                elif line[0] == "Sao Tome & Principe":
-                    line[0] = "Sao Tome And Principe"
-                elif line[0] == "Trinidad & Tobago":
-                    line[0] = "Trinidad And Tobago"
-                elif line[0] == "Turks & Caicos Is":
-                    line[0] = "Turks And Caicos Islands"
-                elif line[0] == "Wallis and Futuna":
-                    line[0] == "Wallis And Futuna"
-                elif line[0] == "Tanzania":
-                    line[0] == "United Republic Of Tanzania"
+                if line[0] in country_names_dict.keys():
+                    line[0] = country_names_dict[line[0]]
+                
+                line[1] = line[1].strip()
+                if line[1] in regions_dict.keys():
+                    line[1] = regions_dict[line[1]]
                 writer.writerow(line)
 
 def check_most_recent(table_name, week_str):

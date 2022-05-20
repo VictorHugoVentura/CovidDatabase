@@ -22,14 +22,21 @@ public_path = shutil.copy(os.path.abspath(new_csv_file), public_folder)
 view_name = "current_stats"
 
 if __name__ == '__main__':
-    print(f"Start Execution: {round(time.time() - start_time, 2)}s")
+    print(f"Start execution: {round(time.time() - start_time, 2)}s")
 
     create_database()
 
-    print(f"Created Database: {round(time.time() - start_time, 2)}s")
+    print(f"Created database: {round(time.time() - start_time, 2)}s")
 
     with urllib.request.urlopen(ecdc_url) as url:
-        data = json.loads(url.read().decode())
+        try:
+            data =  json.loads(url.read().decode())
+            with open('covid.json', 'w') as f:
+                json.dump(data, f)
+        except:
+            with open("covid.json") as f:
+                print("Using local copy of JSON file")
+                data = json.loads(f.read())
 
     print(f"Retrieved data: {round(time.time() - start_time, 2)}s")
 
